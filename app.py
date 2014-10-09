@@ -28,28 +28,39 @@ def read(filename):
 
 commands['read'] = read
 
+def _json_stat(path):
+    st = os.stat(path)
+    return {
+        'size': int(st.st_size),
+        'directory': os.path.isdir(path),
+        'permissions': st.st_mode,
+        'hardlinks': st.st_nlink,
+        'modified': int(st.st_mtime),
+        'owner': getpwuid(st.st_uid)[0],
+        'group': getgrgid(st.st_gid)[0],
+    }
+
 @handle_os_errors
 def list(directory):
     dirs = []
     for path in os.listdir(directory):
         full_path = os.path.join(directory, path)
-        st = os.stat(full_path)
-        entry = {
-            'name': path,
-            'size': int(st.st_size),
-            'directory': os.path.isdir(full_path),
-            'permissions': st.st_mode,
-            'hardlinks': st.st_nlink,
-            'modified': int(st.st_mtime),
-            'owner': getpwuid(st.st_uid)[0],
-            'group': getgrgid(st.st_gid)[0],
-        }
-        dirs.append(entry)
+        st = _json_stat(full_path)
+        dirs.append([path, st])
     json.dump(dirs, sys.stdout, indent=4)
     sys.stdout.flush()
     return 0
 
 commands['list'] = list
+
+@handle_os_errors
+def stat(path):
+    st = _json_stat(path)
+    json.dump(st, sys.stdout, indent=4)
+    sys.stdout.flush()
+    return 0
+
+commands['stat'] = stat
 
 @handle_os_errors
 def mkdir(arg):
