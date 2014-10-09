@@ -51,17 +51,43 @@ def list(directory):
 
 commands['list'] = list
 
+@handle_os_errors
+def mkdir(arg):
+    os.mkdir(arg)
+    return 0
+
+commands['mkdir'] = mkdir
+
+
+@handle_os_errors
+def rmdir(arg):
+    os.rmdir(arg)
+    return 0
+
+commands['rmdir'] = rmdir
+
+@handle_os_errors
+def rm(arg):
+    os.remove(arg)
+
+commands['rm'] = rm
+
+@handle_os_errors
+def rename(src, dst):
+    os.rename(src, dst)
+
+commands['rename'] = rename
+
 def main():
-    chroot_dir = os.getenv('CHROOT_DIR')
-    if chroot_dir is not None:
-        os.chroot(chroot_dir)
-    try:
-        _, cmd, arg = sys.argv
-    except ValueError:
+    if len(sys.argv) < 3:
         sys.stderr.write('Usage {} [command] [argument]\n'.format(sys.argv[0]))
-    else:
-        exit_code = commands[cmd](arg)
-        sys.exit(1)
+        return 1
+    _ = sys.argv.pop(0)
+    cmd = sys.argv.pop(0)
+    return commands[cmd](*sys.argv)
 
 if __name__ == '__main__':
-    main()
+    exit_code = main()
+    if exit_code is None:
+        exit_code = 0
+    sys.exit(exit_code)
