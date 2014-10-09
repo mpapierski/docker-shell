@@ -2,6 +2,7 @@
 import sys
 import os
 import json
+import stat
 from pwd import getpwuid
 from grp import getgrgid
 
@@ -32,7 +33,8 @@ def _json_stat(path):
     st = os.stat(path)
     return {
         'size': int(st.st_size),
-        'directory': os.path.isdir(path),
+        # Dont call os.path.isdir to avoid possible race condition
+        'directory': st.st_mode & stat.S_IFDIR == stat.S_IFDIR,
         'permissions': st.st_mode,
         'hardlinks': st.st_nlink,
         'modified': int(st.st_mtime),
@@ -54,13 +56,13 @@ def list(directory):
 commands['list'] = list
 
 @handle_os_errors
-def stat(path):
+def stat_(path):
     st = _json_stat(path)
     json.dump(st, sys.stdout, indent=4)
     sys.stdout.flush()
     return 0
 
-commands['stat'] = stat
+commands['stat'] = stat_
 
 @handle_os_errors
 def mkdir(arg):
