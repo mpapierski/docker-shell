@@ -1,3 +1,4 @@
+import struct
 import functools
 import json
 import sys
@@ -31,3 +32,17 @@ def _read_chunks(fileobj, chunksize=16384):
         if not chunk:
             break
         yield chunk
+
+def _read_framed_chunks(fileobj):
+    """Read framed chunks from `fileobj`
+    """
+    while True:
+        head = fileobj.read(4)
+        if not head:
+            break
+        (size, ) = struct.unpack('<I', head)
+        if size == 0:
+            break
+        chunk = fileobj.read(size)
+        yield chunk
+

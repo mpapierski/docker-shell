@@ -6,7 +6,7 @@ import stat
 from pwd import getpwuid
 from grp import getgrgid
 
-from helpers import _read_chunks, handle_os_errors
+from helpers import _read_chunks, _read_framed_chunks, handle_os_errors
 
 commands = {}
 
@@ -90,6 +90,30 @@ def rename(src, dst):
     os.rename(src, dst)
 
 commands['rename'] = rename
+
+
+@handle_os_errors
+def test_stdin(arg):
+    import select
+    import fcntl
+    flags = fcntl.fcntl(sys.stdin, fcntl.F_GETFL)
+    fcntl.fcntl(sys.stdin, fcntl.F_SETFL, flags | os.O_NONBLOCK)
+
+    while True:
+        r, w, e = select.select([sys.stdin], [], [], 1.0)
+        if sys.stdin not in r:
+            sys.stdout.write('Waiting...\n')
+        else:
+            data = sys.stdin.read()
+            if not data:
+                sys.stdout.write('EOF\n')
+                sys.stdout.flush()
+                break
+            else:
+                sys.stdout.write('Stdin "{!r}"\n'.format(data))
+        sys.stdout.flush()
+
+commands['test_stdin'] = test_stdin
 
 def main():
     if len(sys.argv) < 3:
