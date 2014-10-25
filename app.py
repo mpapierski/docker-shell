@@ -31,6 +31,14 @@ commands['read'] = read
 
 def _json_stat(path):
     st = os.stat(path)
+    try:
+      owner = getpwuid(st.st_uid)[0]
+    except KeyError:
+      owner = 'root'
+    try:
+      group = getgrgid(st.st_gid)[0]
+    except KeyError:
+      group = 'root'
     return {
         'size': int(st.st_size),
         # Dont call os.path.isdir to avoid possible race condition
@@ -38,8 +46,8 @@ def _json_stat(path):
         'permissions': st.st_mode,
         'hardlinks': st.st_nlink,
         'modified': int(st.st_mtime),
-        'owner': getpwuid(st.st_uid)[0],
-        'group': getgrgid(st.st_gid)[0],
+        'owner': owner,
+        'group': group
     }
 
 @handle_os_errors
