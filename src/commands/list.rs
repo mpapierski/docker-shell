@@ -18,7 +18,6 @@ struct Output {
 impl<'a> Dispatch for List<'a> {
     type Error = io::Error;
     fn dispatch(&self) -> Result<(), Self::Error> {
-        println!("Hello {}", self.0.display());
         let mut outputs = Vec::new();
         for entry in fs::read_dir(self.0)? {
             let entry = entry?;

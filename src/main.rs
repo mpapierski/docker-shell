@@ -16,7 +16,13 @@ fn main() -> Result<(), Box<dyn Error>> {
     // TODO: Use args straight and own strings
     let args: Vec<&str> = args.iter().map(String::as_str).collect();
 
-    let cmd: Command = args[..].try_into().unwrap();
+    let cmd :Command = match args[..].try_into() {
+        Ok(command) => command,
+        Err(_) => {
+            println!("{}", json!({"error": 0, "message": "Invalid command"}));
+            return Ok(());
+        }
+    };
     if let Err(error) = cmd.dispatch() {
         println!(
             "{}",
