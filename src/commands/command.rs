@@ -1,5 +1,7 @@
 use std::convert::TryFrom;
+use std::io;
 
+use super::dispatch::Dispatch;
 use super::list::List;
 
 #[derive(Debug)]
@@ -30,7 +32,18 @@ impl<'a> TryFrom<&'a [&'a str]> for Command<'a> {
             let lst = List::from(value[1]);
             Ok(Command::List(lst))
         } else {
+            println!("nope 2");
             Err(TryFromStringForCommand(()))
+        }
+    }
+}
+
+impl<'a> Dispatch for Command<'a> {
+    type Error = io::Error;
+    fn dispatch(&self) -> Result<(), Self::Error> {
+        match self {
+            Command::List(list) => list.dispatch(),
+            _ => unimplemented!(),
         }
     }
 }

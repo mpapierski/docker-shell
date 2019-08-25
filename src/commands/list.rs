@@ -1,17 +1,21 @@
+use std::io;
+
+use super::dispatch::Dispatch;
 use std::path::Path;
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct List<'a>(&'a Path);
 
-impl<'a> From<&'a str> for List<'a> {
-    fn from(t: &'a str) -> List<'a> {
-        // let s :String = t.into();
-        List(Path::new(t))
+impl<'a> Dispatch for List<'a> {
+    type Error = io::Error;
+    fn dispatch(&self) -> Result<(), Self::Error> {
+        println!("Hello {}", self.0.display());
+        Ok(())
     }
 }
 
-// impl<'a> Into<Box<Path>> for List<'a> {
-//     fn into(self) -> Box<Path> {
-//         self.0
-//     }
-// }
+impl<'a> From<&'a str> for List<'a> {
+    fn from(t: &'a str) -> List<'a> {
+        List(Path::new(t))
+    }
+}
