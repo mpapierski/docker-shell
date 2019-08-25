@@ -1,3 +1,9 @@
+extern crate serde;
+#[macro_use]
+extern crate serde_derive;
+#[macro_use]
+extern crate serde_json;
+
 pub mod commands;
 use std::convert::TryInto;
 use std::env;
@@ -11,6 +17,13 @@ fn main() -> Result<(), Box<dyn Error>> {
     let args: Vec<&str> = args.iter().map(String::as_str).collect();
 
     let cmd: Command = args[..].try_into().unwrap();
-    cmd.dispatch()?;
+    if let Err(error) = cmd.dispatch() {
+        println!(
+            "{}",
+            json!({
+                "error": error.raw_os_error(),
+            })
+        );
+    }
     Ok(())
 }
